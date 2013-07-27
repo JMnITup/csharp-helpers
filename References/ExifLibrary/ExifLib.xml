@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ExifLib</name>
+    </assembly>
+    <members>
+        <member name="T:ExifLib.ExifReader">
+            <summary>
+            A class for reading Exif data from a JPEG file. The file will be open for reading for as long as the class exists.
+            <seealso>
+              <cref>http://gvsoft.homedns.org/exif/Exif-explanation.html</cref>
+            </seealso>
+            </summary>
+        </member>
+        <member name="F:ExifLib.ExifReader.ifd0Catalogue">
+            <summary>
+            The main tag id/absolute file offset catalogue
+            </summary>
+        </member>
+        <member name="F:ExifLib.ExifReader.ifd1Catalogue">
+            <summary>
+            The thumbnail tag id/absolute file offset catalogue
+            </summary>
+            <remarks>JPEG images contain 2 main sections - one for the main image (which contains most of the useful EXIF data), and one for the thumbnail
+            image (which contains little more than the thumbnail itself). This catalogue is only used by <see cref="M:ExifLib.ExifReader.GetJpegThumbnailBytes"/>.</remarks>
+        </member>
+        <member name="F:ExifLib.ExifReader.isLittleEndian">
+            <summary>
+            Indicates whether to read data using big or little endian byte aligns
+            </summary>
+        </member>
+        <member name="F:ExifLib.ExifReader.tiffHeaderStart">
+            <summary>
+            The position in the filestream at which the TIFF header starts
+            </summary>
+        </member>
+        <member name="F:ExifLib.ExifReader.ifd1Offset">
+            <summary>
+            The location of the thumbnail IFD
+            </summary>
+        </member>
+        <member name="M:ExifLib.ExifReader.GetTIFFFieldLength(System.UInt16)">
+            <summary>
+            Returns the length (in bytes) per component of the specified TIFF data type
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ReadUShort">
+            <summary>
+            Gets a 2 byte unsigned integer from the file
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ReadUint">
+            <summary>
+            Gets a 4 byte unsigned integer from the file
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ReadBytes(System.UInt16,System.Int32)">
+            <summary>
+            Reads some bytes from the specified TIFF offset
+            </summary>
+            <param name="tiffOffset"></param>
+            <param name="byteCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ToUShort(System.Byte[])">
+            <summary>
+            Converts 2 bytes to a ushort using the current byte aligns
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ToURational(System.Byte[])">
+            <summary>
+            Converts 8 bytes to an unsigned rational using the current byte aligns.
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+            <seealso cref="M:ExifLib.ExifReader.ToRational(System.Byte[])"/>
+        </member>
+        <member name="M:ExifLib.ExifReader.ToRational(System.Byte[])">
+            <summary>
+            Converts 8 bytes to a signed rational using the current byte aligns.
+            </summary>
+            <remarks>
+            A TIFF rational contains 2 4-byte integers, the first of which is
+            the numerator, and the second of which is the denominator.
+            </remarks>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ToUint(System.Byte[])">
+            <summary>
+            Converts 4 bytes to a uint using the current byte aligns
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ToInt(System.Byte[])">
+            <summary>
+            Converts 4 bytes to an int using the current byte aligns
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.GetArray``1(System.Byte[],System.Int32,ExifLib.ExifReader.ConverterMethod{``0})">
+            <summary>
+            Retrieves an array from a byte array using the supplied converter
+            to read each individual element from the supplied byte array
+            </summary>
+            <param name="data"></param>
+            <param name="elementLengthBytes"></param>
+            <param name="converter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.ReadToExifStart">
+            <summary>
+            Scans to the Exif block
+            </summary>
+        </member>
+        <member name="M:ExifLib.ExifReader.CreateTagIndex">
+            <summary>
+            Reads through the Exif data and builds an index of all Exif tags in the document
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ExifLib.ExifReader.GetTagValue``1(System.Collections.Generic.Dictionary{System.UInt16,System.Int64},System.UInt16,``0@)">
+            <summary>
+            Retrieves an Exif value with the requested tag ID
+            </summary>
+        </member>
+        <member name="M:ExifLib.ExifReader.GetTagBytes(System.Collections.Generic.Dictionary{System.UInt16,System.Int64},System.UInt16,System.UInt16@,System.UInt32@)">
+            <summary>
+            Gets the data in the specified tag ID, starting from before the IFD block.
+            </summary>
+            <param name="tiffDataType"></param>
+            <param name="numberOfComponents">The number of items which make up the data item - i.e. for a string, this will be the
+            number of characters in the string</param>
+            <param name="tagDictionary"></param>
+            <param name="tagID"></param>
+        </member>
+        <member name="M:ExifLib.ExifReader.CatalogueIFD(System.Collections.Generic.Dictionary{System.UInt16,System.Int64}@)">
+            <summary>
+            Records all Exif tags and their offsets within
+            the file from the current IFD
+            </summary>
+        </member>
+        <member name="M:ExifLib.ExifReader.GetJpegThumbnailBytes">
+            <summary>
+            Retrieves a JPEG thumbnail from the image if one is present. Note that this method cannot retrieve thumbnails encoded in other formats,
+            but since the DCF specification specifies that thumbnails must be JPEG, this method will be sufficient for most purposes
+            See http://gvsoft.homedns.org/exif/exif-explanation.html#TIFFThumbs or http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf for 
+            details on the encoding of TIFF thumbnails
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ExifLib.ExifReader.ConverterMethod`1">
+            <summary>
+            A delegate used to invoke any of the data conversion methods
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+            <remarks>Although this could be defined as covariant, it wouldn't work on Windows Phone</remarks>
+        </member>
+        <member name="T:ExifLib.ExifTags">
+            <summary>
+            All exif tags as per the Exif standard 2.2, JEITA CP-2451
+            </summary>
+        </member>
+    </members>
+</doc>
