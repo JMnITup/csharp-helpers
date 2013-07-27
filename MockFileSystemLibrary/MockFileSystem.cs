@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using FileSystem;
+using FileSystemLibrary;
 using JMExtensions;
 
 #endregion
