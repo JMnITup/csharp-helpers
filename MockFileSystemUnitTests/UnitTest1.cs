@@ -38,7 +38,7 @@ namespace MockFileSystemUnitTests {
 		public void CreateSimpleDirectoryAfterInstantiate() {
 			// Arrange
 			var fs = new MockFileSystem();
-			string newdir = "newdir";
+			const string newdir = "newdir";
 
 			// Act
 			fs.CreateDirectory(newdir);
@@ -51,7 +51,7 @@ namespace MockFileSystemUnitTests {
 		public void DirectoryExistsReturnsTrueForExistingDirectory() {
 			// Arrange
 			var fs = new MockFileSystem();
-			string newdir = "newdir";
+			const string newdir = "newdir";
 			fs.CreateDirectory(newdir);
 
 			// Act
@@ -65,10 +65,10 @@ namespace MockFileSystemUnitTests {
 			// Arrange
 			var fs = new MockFileSystem();
 			string newdir = "newdir";
-			fs.CreateDirectory("newdir");
+			fs.CreateDirectory(newdir);
 
 			// Act
-			var result = fs.DirectoryExists("newdir\\");
+			var result = fs.DirectoryExists(newdir + "\\");
 
 			// Assert
 			Assert.IsTrue(result);
@@ -101,7 +101,7 @@ namespace MockFileSystemUnitTests {
 
 		[TestMethod]
 		[ExpectedException(typeof(IOException))]
-		public void CreateExistingDirectoryThrowsIOException() {
+		public void CreateExistingDirectoryThrowsIoException() {
 			// Arrange
 			var fs = new MockFileSystem();
 			fs.CreateDirectory("test");

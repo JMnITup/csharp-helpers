@@ -1,21 +1,11 @@
-// /*
-// JamesM
-// 2013 06 17 9:51 PM
-// 2013 06 18 1:23 AM
-// FileSystem.cs
-// PictureHandlerLibrary
-// PictureHandler
-// */
-
 #region
 
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 
 #endregion
 
-namespace PictureHandlerLibrary {
+namespace FileSystem {
 	public class FileSystem : IFileSystem {
 		public bool FileExists(string pathName) {
 			return (File.Exists(pathName));
@@ -26,7 +16,7 @@ namespace PictureHandlerLibrary {
 		}
 
 		public long GetFileLength(string fileName) {
-			FileInfo info = new FileInfo(fileName);
+			var info = new FileInfo(fileName);
 			return info.Length;
 		}
 

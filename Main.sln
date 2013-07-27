@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockFileSystemUnitTests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSystem", "FileSystem\FileSystem.csproj", "{771FBC50-22F0-4E01-9B99-B41FA9D5D3E2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileSystemLibrary", "FileSystemLibrary", "{C9879DAD-0CA0-4F13-8C2D-2E91B56E3C85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,5 +36,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{771FBC50-22F0-4E01-9B99-B41FA9D5D3E2} = {C9879DAD-0CA0-4F13-8C2D-2E91B56E3C85}
+		{CDCB62B8-D159-424D-9F09-238E46065E8C} = {C9879DAD-0CA0-4F13-8C2D-2E91B56E3C85}
+		{B5AE6FF4-AB56-4DEB-B625-D444ABA44E83} = {C9879DAD-0CA0-4F13-8C2D-2E91B56E3C85}
 	EndGlobalSection
 EndGlobal

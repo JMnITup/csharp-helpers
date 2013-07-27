@@ -54,9 +54,13 @@
     <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FileSystem\FileSystem.csproj">
+      <Project>{771fbc50-22f0-4e01-9b99-b41fa9d5d3e2}</Project>
+      <Name>FileSystem</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MockFileSystemLibrary\MockFileSystemLibrary.csproj">
       <Project>{cdcb62b8-d159-424d-9f09-238e46065e8c}</Project>
-      <Name>MockFileSystemLibrary %28MockFileSystemLibrary\MockFileSystemLibrary%29</Name>
+      <Name>MockFileSystemLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

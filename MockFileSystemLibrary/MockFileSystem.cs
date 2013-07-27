@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using FileSystem;
 using JMExtensions;
 
 #endregion
@@ -54,8 +55,7 @@ namespace MockFileSystemLibrary {
 			}
 
 
-			var newFile = new File(childPath, fileSize);
-			newFile.ExifDateTimeOriginal = exifDateTimeOriginal;
+			var newFile = new File(childPath, fileSize) {ExifDateTimeOriginal = exifDateTimeOriginal};
 			ConvertPathToNodeReference(parentPath).AddFile(newFile);
 		}
 
@@ -87,6 +87,7 @@ namespace MockFileSystemLibrary {
 			while (path.Right(1) == "\\") {
 				path = path.Substring(0, path.Length - 1);
 			}
+			if (ConvertPathToNodeReference(path) != null) { throw new IOException("Directory of file with same name already exists");}
 			string parentPath = _currentDirectory.GetFullPath();
 			string childPath = path;
 			int indexOfLastSlash = path.LastIndexOf('\\');
@@ -113,16 +114,16 @@ namespace MockFileSystemLibrary {
 			if (newParentNode == null) {
 				throw new Exception("Something bad happened");
 			}
-			Node oldParentNode = fileNode._parent;
+			Node oldParentNode = fileNode.Parent;
 
-			if (newParentNode._children.Find(y => y._name.ToUpper() == newTargetString.ToUpper()) != null) {
+			if (newParentNode.Children.Find(y => y.Name.ToUpper() == newTargetString.ToUpper()) != null) {
 				throw new IOException("New file location already contains a file of the same name");
 			}
 
-			oldParentNode._children.Remove(fileNode);
-			newParentNode._children.Add(fileNode);
-			fileNode._parent = newParentNode;
-			fileNode._name = newTargetString;
+			oldParentNode.Children.Remove(fileNode);
+			newParentNode.Children.Add(fileNode);
+			fileNode.Parent = newParentNode;
+			fileNode.Name = newTargetString;
 		}
 
 		public bool DirectoryExists(string path) {
@@ -130,7 +131,7 @@ namespace MockFileSystemLibrary {
 			if (x == null) {
 				return false;
 			}
-			if (x._type == NodeType.Directory || x._type == NodeType.Drive) {
+			if (x.Type == NodeType.Directory || x.Type == NodeType.Drive) {
 				return true;
 			}
 			return false;
@@ -190,12 +191,14 @@ namespace MockFileSystemLibrary {
 				if (entry == "") {
 					break;
 				}
-				Node newLoc = currentLocation._children.Find(x => x.GetName().ToUpper() == entry.ToUpper());
+				if (currentLocation == null) {
+					return null;
+				}
+				Node newLoc = currentLocation.Children.Find(x => x.GetName().ToUpper() == entry.ToUpper());
 				if (newLoc == null) {
 					return null;
-				} else {
-					currentLocation = newLoc;
 				}
+				currentLocation = newLoc;
 			}
 
 			return currentLocation;
@@ -213,7 +216,7 @@ namespace MockFileSystemLibrary {
 			if (x == null) {
 				return false;
 			}
-			if (x._type == NodeType.File) {
+			if (x.Type == NodeType.File) {
 				return true;
 			}
 			return false;
@@ -225,7 +228,7 @@ namespace MockFileSystemLibrary {
 
 		public DateTime? GetMockExifData(string fileName) {
 			var fileNode = (File) ConvertPathToNodeReference(fileName);
-			if (fileNode._type != NodeType.File) {
+			if (fileNode.Type != NodeType.File) {
 				return null;
 			}
 			return fileNode.ExifDateTimeOriginal;
@@ -237,52 +240,50 @@ namespace MockFileSystemLibrary {
 		}
 
 		private class File : Node {
-			public long FileSize;
-
 			public File(string fileName, long fileSize) : base(fileName, NodeType.File) {
 				FileSize = fileSize;
 			}
 
 			public string FileName {
-				get { return _name; }
+				get { return Name; }
 			}
 
 			public DateTime? ExifDateTimeOriginal { get; set; }
+
+			public long FileSize { get; set; }
 		}
 
 		[DebuggerDisplay("{_name} ({_type})")]
 		private class Node {
-			public readonly List<Node> _children = new List<Node>();
-			public readonly NodeType _type;
-			public string _name;
-			public Node _parent;
+			internal readonly List<Node> Children = new List<Node>();
+			internal readonly NodeType Type;
+			internal string Name;
+			internal Node Parent;
 
 			private Node() {}
 
 			protected Node(string name, NodeType type) {
-				_name = name;
-				_type = type;
+				Name = name;
+				Type = type;
 			}
 
-			protected Node(string name, NodeType type, Node parent)
+			private Node(string name, NodeType type, Node parent)
 				: this(name, type) {
-				_parent = parent;
+				Parent = parent;
 			}
 
 			public string GetName() {
-				return _name;
+				return Name;
 			}
 
 			public string GetFullPath() {
-				if (_parent != null) {
-					if (_type == NodeType.Directory) {
-						return _parent.GetFullPath() + _name + "\\";
-					} else {
-						return _parent.GetFullPath() + _name;
+				if (Parent != null) {
+					if (Type == NodeType.Directory) {
+						return Parent.GetFullPath() + Name + "\\";
 					}
-				} else {
-					return _name + ":\\";
+					return Parent.GetFullPath() + Name;
 				}
+				return Name + ":\\";
 			}
 
 			public static Node CreateDriveNode(string name) {
@@ -293,29 +294,29 @@ namespace MockFileSystemLibrary {
 			}
 
 			public Node CreateDirectoryNode(string name) {
-				if (_type == NodeType.File) {
+				if (Type == NodeType.File) {
 					throw new Exception("Cannot create directory within a file");
 				}
 				var newNode = new Node(name, NodeType.Directory, this);
-				_children.Add(newNode);
+				Children.Add(newNode);
 				return newNode;
 			}
 
 			public Node CreateFileNode(string name) {
-				if (_type == NodeType.File) {
+				if (Type == NodeType.File) {
 					throw new Exception("Cannot create file within a file");
 				}
 				var newNode = new Node(name, NodeType.File, this);
-				_children.Add(newNode);
+				Children.Add(newNode);
 				return newNode;
 			}
 
 			public void AddFile(File newFile) {
-				if (_type == NodeType.File) {
+				if (Type == NodeType.File) {
 					throw new Exception("Cannot create file within a file");
 				}
-				_children.Add(newFile);
-				newFile._parent = this;
+				Children.Add(newFile);
+				newFile.Parent = this;
 			}
 		}
 	}

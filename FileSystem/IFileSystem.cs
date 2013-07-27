@@ -1,13 +1,4 @@
-// /*
-// JamesM
-// 2013 06 14 10:38 AM
-// 2013 06 14 12:09 PM
-// IFileSystem.cs
-// PictureHandler
-// PictureHandler
-// */
-
-namespace PictureHandlerLibrary {
+namespace FileSystem {
 	public interface IFileSystem {
 		bool FileExists(string pathName);
 		string[] GetFilesInDirectory(string directory);

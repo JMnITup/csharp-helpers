@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FileSystem\FileSystem.csproj">
+      <Project>{771FBC50-22F0-4E01-9B99-B41FA9D5D3E2}</Project>
+      <Name>FileSystem</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JMExtensions\JMExtensions.csproj">
       <Project>{cd9f7b9f-6913-4050-9a2d-990eef764597}</Project>
       <Name>JMExtensions</Name>
