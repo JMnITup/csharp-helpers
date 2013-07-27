@@ -2,11 +2,10 @@
 
 using System;
 using System.IO;
-using FileSystemLibrary;
 
 #endregion
 
-namespace FileSystem {
+namespace FileSystemLibrary {
 	public class FileSystem : IFileSystem {
 		public bool FileExists(string pathName) {
 			return (File.Exists(pathName));
@@ -60,11 +59,11 @@ namespace FileSystem {
 		public void CopyFiles(string sourceDirectory, string targetDirectory) {
 			if (DirectoryExists(sourceDirectory) && DirectoryExists(targetDirectory)) {
 				string[] filesInDirectory = GetFilesInDirectory(sourceDirectory);
-				foreach (var file in filesInDirectory) {
-					var newFileSplit = file.Split('\\');
-					var newFile = newFileSplit[newFileSplit.Length - 1];
+				foreach (string file in filesInDirectory) {
+					string[] newFileSplit = file.Split('\\');
+					string newFile = newFileSplit[newFileSplit.Length - 1];
 
-					
+
 					CopyFile(file, targetDirectory + "\\" + newFile);
 				}
 			}

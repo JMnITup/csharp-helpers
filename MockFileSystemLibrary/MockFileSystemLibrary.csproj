@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FileSystemLibrary\FileSystemLibrary.csproj">
-      <Project>{771FBC50-22F0-4E01-9B99-B41FA9D5D3E2}</Project>
+      <Project>{771fbc50-22f0-4e01-9b99-b41fa9d5d3e2}</Project>
       <Name>FileSystemLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\JMExtensions\JMExtensions.csproj">

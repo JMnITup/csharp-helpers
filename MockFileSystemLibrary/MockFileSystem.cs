@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using FileSystem;
 using FileSystemLibrary;
 using JMExtensions;
 
@@ -29,35 +28,6 @@ namespace MockFileSystemLibrary {
 			_driveList.Add(newNode);
 			_currentDirectory = newNode;
 			_currentDrive = newNode;
-		}
-
-		private void SetCurrentDirectory(Node newDirectory) {
-			_currentDirectory = newDirectory;
-			// TODO: throw DirectoryNotFoundException if doesn't exist
-		}
-
-		public void SetCurrentDirectory(string newDirectory) {
-			Node x = ConvertPathToNodeReference(newDirectory);
-			_currentDirectory = x;
-			// TODO: throw DirectoryNotFoundException if doesn't exist
-		}
-
-		public string GetCurrentDirectory() {
-			return _currentDirectory.GetFullPath();
-		}
-
-		public void AddFile(string fileName, long fileSize, DateTime? exifDateTimeOriginal = null) {
-			string[] x = ConvertPathToParentAndTargetPaths(fileName);
-			string parentPath = x[0];
-			string childPath = x[1];
-
-			if (!DirectoryExists(parentPath)) {
-				CreateDirectory(parentPath);
-			}
-
-
-			var newFile = new File(childPath, fileSize) {ExifDateTimeOriginal = exifDateTimeOriginal};
-			ConvertPathToNodeReference(parentPath).AddFile(newFile);
 		}
 
 		public void DeleteDirectory(string directoryName) {
@@ -88,7 +58,9 @@ namespace MockFileSystemLibrary {
 			while (path.Right(1) == "\\") {
 				path = path.Substring(0, path.Length - 1);
 			}
-			if (ConvertPathToNodeReference(path) != null) { throw new IOException("Directory of file with same name already exists");}
+			if (ConvertPathToNodeReference(path) != null) {
+				throw new IOException("Directory of file with same name already exists");
+			}
 			string parentPath = _currentDirectory.GetFullPath();
 			string childPath = path;
 			int indexOfLastSlash = path.LastIndexOf('\\');
@@ -136,6 +108,50 @@ namespace MockFileSystemLibrary {
 				return true;
 			}
 			return false;
+		}
+
+		public bool FileExists(string path) {
+			Node x = ConvertPathToNodeReference(path);
+			if (x == null) {
+				return false;
+			}
+			if (x.Type == NodeType.File) {
+				return true;
+			}
+			return false;
+		}
+
+		public string[] GetFilesInDirectory(string directory) {
+			throw new NotImplementedException();
+		}
+
+		private void SetCurrentDirectory(Node newDirectory) {
+			_currentDirectory = newDirectory;
+			// TODO: throw DirectoryNotFoundException if doesn't exist
+		}
+
+		public void SetCurrentDirectory(string newDirectory) {
+			Node x = ConvertPathToNodeReference(newDirectory);
+			_currentDirectory = x;
+			// TODO: throw DirectoryNotFoundException if doesn't exist
+		}
+
+		public string GetCurrentDirectory() {
+			return _currentDirectory.GetFullPath();
+		}
+
+		public void AddFile(string fileName, long fileSize, DateTime? exifDateTimeOriginal = null) {
+			string[] x = ConvertPathToParentAndTargetPaths(fileName);
+			string parentPath = x[0];
+			string childPath = x[1];
+
+			if (!DirectoryExists(parentPath)) {
+				CreateDirectory(parentPath);
+			}
+
+
+			var newFile = new File(childPath, fileSize) {ExifDateTimeOriginal = exifDateTimeOriginal};
+			ConvertPathToNodeReference(parentPath).AddFile(newFile);
 		}
 
 		private string[] ConvertPathToParentAndTargetPaths(string path) {
@@ -210,21 +226,6 @@ namespace MockFileSystemLibrary {
 				throw new Exception(string.Format("No drives defined in mock filesystem, drive {0} not found", driveLetter));
 			}
 			return _driveList.Find(x => x.GetName().ToUpper() == driveLetter.ToUpper());
-		}
-
-		public bool FileExists(string path) {
-			Node x = ConvertPathToNodeReference(path);
-			if (x == null) {
-				return false;
-			}
-			if (x.Type == NodeType.File) {
-				return true;
-			}
-			return false;
-		}
-
-		public string[] GetFilesInDirectory(string directory) {
-			throw new NotImplementedException();
 		}
 
 		public DateTime? GetMockExifData(string fileName) {
