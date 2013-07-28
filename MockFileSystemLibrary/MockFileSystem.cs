@@ -31,6 +31,11 @@ namespace MockFileSystemLibrary {
 			dirNode.Parent.Children.Remove(dirNode);
 		}
 
+		public void DeleteDirectoryAndAllFiles(string directoryName) {
+			Node dirNode = ConvertPathToNodeReference(directoryName);
+			dirNode.Parent.Children.Remove(dirNode);
+		}
+
 		public void DeleteFile(string fileName) {
 			Node fileNode = ConvertPathToNodeReference(fileName);
 			if (fileNode == null) {
@@ -70,10 +75,6 @@ namespace MockFileSystemLibrary {
 			var newNode = (File) fromNode.Clone();
 			newNode.Rename(targetPath);
 			toParentNode.AddFile(newNode);
-		}
-
-		public void DeleteDirectoryAndAllFiles(string directoryName) {
-			throw new NotImplementedException();
 		}
 
 		public long GetFileLength(string fileName) {
@@ -159,7 +160,17 @@ namespace MockFileSystemLibrary {
 		}
 
 		public string[] GetFilesInDirectory(string directory) {
-			throw new NotImplementedException();
+			Node x = ConvertPathToNodeReference(directory);
+			if (x.Type == NodeType.File) {
+				throw new Exception();
+			}
+			var rv = new List<string>();
+			foreach (Node node in x.Children) {
+				if (node.Type == NodeType.File) {
+					rv.Add(node.GetFullPath());
+				}
+			}
+			return rv.ToArray();
 		}
 
 		public void SetCurrentDirectory(string newDirectory) {
