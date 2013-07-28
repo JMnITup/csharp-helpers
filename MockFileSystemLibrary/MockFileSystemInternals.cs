@@ -3,18 +3,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using FileSystemLibrary;
-using JMExtensions;
 
 #endregion
 
 namespace MockFileSystemLibrary {
+	[DebuggerDisplay("{DisplayFileStructure()}")]
 	public partial class MockFileSystem {
 		public enum NodeType {
 			Drive,
 			Directory,
 			File,
+		}
+
+		public string DisplayFileStructure() {
+			string rv = "";
+			foreach (Node drive in _driveList) {
+				rv += drive.DisplayNode();
+			}
+			return rv;
 		}
 
 		private class File : Node {
@@ -31,8 +37,8 @@ namespace MockFileSystemLibrary {
 			public long FileSize { get; set; }
 		}
 
-		[DebuggerDisplay("{_name} ({_type})")]
-		private class Node {
+		[DebuggerDisplay("{Name} ({Type})")]
+		private class Node : ICloneable {
 			internal readonly List<Node> Children = new List<Node>();
 			internal readonly NodeType Type;
 			internal string Name;
@@ -48,6 +54,15 @@ namespace MockFileSystemLibrary {
 			private Node(string name, NodeType type, Node parent)
 				: this(name, type) {
 				Parent = parent;
+			}
+
+			public string DisplayNode(int depth = 0) {
+				var prefix = new string('=', depth);
+				string rv = prefix + Name + "\n";
+				foreach (Node child in Children) {
+					rv += child.DisplayNode(depth + 1);
+				}
+				return rv;
 			}
 
 			public string GetName() {
@@ -96,6 +111,25 @@ namespace MockFileSystemLibrary {
 				Children.Add(newFile);
 				newFile.Parent = this;
 			}
+
+			public virtual void Rename(string newName) {
+				// TODO: disallow special characters like slashes
+				Name = newName;
+			}
+
+			#region Implementation of ICloneable
+
+			/// <summary>
+			///   Creates a new object that is a copy of the current instance.
+			/// </summary>
+			/// <returns>
+			///   A new object that is a copy of this instance.
+			/// </returns>
+			public object Clone() {
+				return MemberwiseClone();
+			}
+
+			#endregion
 		}
 	}
 }

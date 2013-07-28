@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -64,11 +65,11 @@ namespace MockFileSystemUnitTests {
 		public void DirectoryExistsReturnsTrueForExistingDirectoryWithTrailingSlash() {
 			// Arrange
 			var fs = new MockFileSystem();
-			string newdir = "newdir";
+			const string newdir = "newdir";
 			fs.CreateDirectory(newdir);
 
 			// Act
-			var result = fs.DirectoryExists(newdir + "\\");
+			bool result = fs.DirectoryExists(newdir + "\\");
 
 			// Assert
 			Assert.IsTrue(result);
@@ -80,7 +81,7 @@ namespace MockFileSystemUnitTests {
 			var fs = new MockFileSystem();
 
 			// Act
-			var result = fs.DirectoryExists("doesnotexist");
+			bool result = fs.DirectoryExists("doesnotexist");
 
 			// Assert
 			Assert.IsFalse(result);
@@ -98,9 +99,8 @@ namespace MockFileSystemUnitTests {
 			Assert.IsTrue(fs.DirectoryExists("c:\\test"));
 		}
 
-
 		[TestMethod]
-		[ExpectedException(typeof(IOException))]
+		[ExpectedException(typeof (IOException))]
 		public void CreateExistingDirectoryThrowsIoException() {
 			// Arrange
 			var fs = new MockFileSystem();
@@ -185,7 +185,6 @@ namespace MockFileSystemUnitTests {
 			Assert.IsTrue(fs.DirectoryExists("C:\\TEST\\test2"));
 		}
 
-
 		[TestMethod]
 		public void CreateFileFromCurrent() {
 			// Arrange
@@ -197,7 +196,6 @@ namespace MockFileSystemUnitTests {
 			// Assert
 			Assert.IsTrue(fs.FileExists("c:\\testFile.txt"));
 		}
-
 
 		[TestMethod]
 		public void CreateFileFromAbsolute() {
@@ -211,6 +209,20 @@ namespace MockFileSystemUnitTests {
 			Assert.IsTrue(fs.FileExists("c:\\testFile.txt"));
 		}
 
+		[TestMethod]
+		public void GetFileSizeReturnsCorrectValue() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const int size = 352;
+			const string file = "c:\\testFile.txt";
+			fs.AddFile(file, size);
+
+			// Act
+			long value = fs.GetFileLength(file);
+
+			// Assert
+			Assert.AreEqual(size, value);
+		}
 
 		[TestMethod]
 		public void CreateNestedFileFromAbsolute() {
@@ -224,7 +236,6 @@ namespace MockFileSystemUnitTests {
 			Assert.IsTrue(fs.FileExists("c:\\test\\test2\\testFile.txt"));
 		}
 
-
 		[TestMethod]
 		public void CreateNestedFileFromCurrentDirectory() {
 			// Arrange
@@ -237,5 +248,217 @@ namespace MockFileSystemUnitTests {
 			Assert.IsTrue(fs.FileExists("c:\\test\\test2\\testFile.txt"));
 		}
 
+		[TestMethod]
+		public void CopyFileCreatesNewFile() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string oldFilePath = "c:\\old\\file1.txt";
+			const long oldSize = 100;
+			const string newFilePath = "c:\\new\\file2.txt";
+			fs.AddFile(oldFilePath, oldSize);
+			fs.CreateDirectory("c:\\new");
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.IsTrue(fs.FileExists(newFilePath));
+			Assert.AreEqual(oldSize, fs.GetFileLength(newFilePath));
+		}
+
+		[TestMethod]
+		public void CopyFileLeavesOldFile() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string oldFilePath = "c:\\old\\file1.txt";
+			const long oldSize = 100;
+			const string newFilePath = "c:\\new\\file2.txt";
+			fs.AddFile(oldFilePath, oldSize);
+			fs.CreateDirectory("c:\\new");
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.IsTrue(fs.FileExists(oldFilePath));
+			Assert.AreEqual(oldSize, fs.GetFileLength(oldFilePath));
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (IOException))]
+		public void CopyFileToExistingFileThrowsIoException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string oldFilePath = "c:\\old\\file1.txt";
+			const long oldSize = 100;
+			const string newFilePath = "c:\\new\\file2.txt";
+			const long newSize = 300;
+			fs.AddFile(oldFilePath, oldSize);
+			fs.AddFile(newFilePath, newSize);
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (FileNotFoundException))]
+		public void CopyFile_NonExistantFromFileThrowsFileNotFoundException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string oldFilePath = "c:\\old\\file1.txt";
+			//long oldSize = 100;
+			const string newFilePath = "c:\\new\\file2.txt";
+			//long newSize = 300;
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (ArgumentException))]
+		public void CopyFile_FromFileIsDirectoryThrowsArgumentException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			fs.CreateDirectory("c:\\old");
+			const string oldFilePath = "c:\\old";
+			//long oldSize = 100;
+			const string newFilePath = "c:\\new\\file2.txt";
+			//long newSize = 300;
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (ArgumentException))]
+		public void CopyFile_ToFileIsDirectoryThrowsArgumentException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			fs.CreateDirectory("c:\\new");
+			const string oldFilePath = "c:\\old\\file1.txt";
+			const long oldSize = 100;
+			const string newFilePath = "c:\\new";
+			//long newSize = 300;
+			fs.AddFile(oldFilePath, oldSize);
+
+			// Act
+			fs.CopyFile(oldFilePath, newFilePath);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (ArgumentNullException))]
+		public void CopyFile_FromFileIsNullThrowsArgumentNullException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			fs.CreateDirectory("c:\\new");
+			const string newFilePath = "c:\\new\\file2.txt";
+			//long newSize = 300;
+
+			// Act
+			fs.CopyFile(null, newFilePath);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (ArgumentNullException))]
+		public void CopyFile_ToFileIsNullThrowsArgumentNullException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			fs.CreateDirectory("c:\\new");
+			const string oldFilePath = "c:\\old\\file1.txt";
+			const long oldSize = 100;
+			fs.AddFile(oldFilePath, oldSize);
+
+			// Act
+			fs.CopyFile(oldFilePath, null);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		public void FileDelete_RemovesFile() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string fileName = "c:\\test\\file1.txt";
+			fs.AddFile(fileName, 255);
+
+			// Act
+			fs.DeleteFile(fileName);
+
+			// Assert
+			Assert.IsFalse(fs.FileExists(fileName));
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (UnauthorizedAccessException))]
+		public void FileDelete_OnDirectoryThrowsUnauthorizedAccessException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string fileName = "c:\\test\\";
+			fs.CreateDirectory(fileName);
+
+			// Act
+			fs.DeleteFile(fileName);
+
+			// Assert
+			Assert.Fail();
+		}
+
+		[TestMethod]
+		public void FileDelete_DeletingNonExistantFileDoesNotFail() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string fileName = "c:\\test\\Horker.txt";
+
+			// Act
+			fs.DeleteFile(fileName);
+
+			// Assert
+		}
+
+		[TestMethod]
+		public void DeleteDirectory_RemovesEmptyDirectory() {
+			// Arrange
+			var fs = new MockFileSystem();
+			const string dirName = "c:\\test";
+			fs.CreateDirectory(dirName);
+
+			// Act
+			fs.DeleteDirectory(dirName);
+
+			// Assert
+			Assert.IsFalse(fs.DirectoryExists(dirName));
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof (IOException))]
+		public void DeleteDirectory_RemoveNonEmptyDirectoryThrowsIoException() {
+			// Arrange
+			var fs = new MockFileSystem();
+			string dirName = "c:\\test";
+			fs.CreateDirectory(dirName);
+			fs.AddFile(dirName + "\\file1.txt", 100);
+
+			// Act
+			fs.DeleteDirectory(dirName);
+
+			// Assert
+			Assert.Fail();
+		}
 	}
 }

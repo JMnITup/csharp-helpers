@@ -24,15 +24,52 @@ namespace MockFileSystemLibrary {
 		}
 
 		public void DeleteDirectory(string directoryName) {
-			throw new NotImplementedException();
+			Node dirNode = ConvertPathToNodeReference(directoryName);
+			if (dirNode.Children.Count > 0) {
+				throw new IOException("Directory not empty");
+			}
+			dirNode.Parent.Children.Remove(dirNode);
 		}
 
 		public void DeleteFile(string fileName) {
-			throw new NotImplementedException();
+			Node fileNode = ConvertPathToNodeReference(fileName);
+			if (fileNode == null) {
+				return;
+			}
+			if (fileNode.Type != NodeType.File) {
+				throw new UnauthorizedAccessException();
+			}
+			fileNode.Parent.Children.Remove(fileNode);
 		}
 
 		public void CopyFile(string fromFileName, string toFileName) {
-			throw new NotImplementedException();
+			if (fromFileName == null || toFileName == null) {
+				throw new ArgumentNullException();
+			}
+			Node x;
+			if ((x = ConvertPathToNodeReference(toFileName)) != null) {
+				if (x.Type == NodeType.File) {
+					throw new IOException("File already exists");
+				}
+				throw new ArgumentException("target is a directory");
+			}
+			if (FileExists(toFileName)) {
+				throw new IOException("File already exists");
+			}
+			Node fromNode = ConvertPathToNodeReference(fromFileName);
+			if (fromNode == null) {
+				throw new FileNotFoundException();
+			}
+			if (fromNode.Type != NodeType.File) {
+				throw new ArgumentException();
+			}
+			string[] parentTargetData = ConvertPathToParentAndTargetPaths(toFileName);
+			string parentPath = parentTargetData[0];
+			string targetPath = parentTargetData[1];
+			Node toParentNode = ConvertPathToNodeReference(parentPath);
+			var newNode = (File) fromNode.Clone();
+			newNode.Rename(targetPath);
+			toParentNode.AddFile(newNode);
 		}
 
 		public void DeleteDirectoryAndAllFiles(string directoryName) {
@@ -40,7 +77,11 @@ namespace MockFileSystemLibrary {
 		}
 
 		public long GetFileLength(string fileName) {
-			throw new NotImplementedException();
+			Node node = ConvertPathToNodeReference(fileName);
+			if (node.Type != NodeType.File) {
+				throw new Exception("Not a file");
+			}
+			return ((File) node).FileSize;
 		}
 
 		public void CopyFiles(string sourceDirectory, string targetDirectory) {
@@ -93,6 +134,9 @@ namespace MockFileSystemLibrary {
 		}
 
 		public bool DirectoryExists(string path) {
+			if (path == null) {
+				throw new ArgumentNullException("path");
+			}
 			Node x = ConvertPathToNodeReference(path);
 			if (x == null) {
 				return false;
